@@ -172,12 +172,12 @@ bool MainWindow::keyboardEvent(int key, int scancode, int action, int modifiers)
 bool MainWindow::resizeEvent(const Eigen::Vector2i & size)
 {
     // rescale setting window, the minimum width 150 is expected to be good enough, only height is resized
-    Vector2i new_setting_size = Vector2i(std::max(150, _settingWindow->size()(0)), size(1) - 2);
+    Vector2i new_setting_size = Vector2i(std::max(150, _settingWindow->size()(0)), size(1) - 3);
     _settingWindow->setSize(new_setting_size);
 
     // color window take full available space
     if (_colorWindow != nullptr)
-        _colorWindow->setSize(Vector2i(size(0) - new_setting_size(0) - 2, size(1) - 2));
+        _colorWindow->setSize(Vector2i(size(0) - new_setting_size(0) - 3, size(1) - 15));
 
     if (_depthWindow != nullptr)
     {
