@@ -64,9 +64,11 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\CommonSetup.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\CommonSetup.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -101,12 +103,20 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SolutionDir)nanogui\nanovg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <UndefinePreprocessorDefinitions>NANOGUI_BUILD;%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
+      <OpenMPSupport>true</OpenMPSupport>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <DisableSpecificWarnings>4828;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -135,19 +145,69 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <UndefinePreprocessorDefinitions>NANOGUI_BUILD;%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)nanogui\nanovg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OpenMPSupport>true</OpenMPSupport>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <DebugInformationFormat />
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AppMain.cpp" />
+    <ClCompile Include="MainWindow.cpp" />
+    <ClCompile Include="VideoView.cpp" />
+    <ClCompile Include="VideoWindow.cpp" />
+    <ClCompile Include="wmain.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AppMain.h" />
+    <ClInclude Include="MainWindow.h" />
+    <ClInclude Include="VideoView.h" />
+    <ClInclude Include="VideoWindow.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\resources\MobileNetSSD_deploy.caffemodel" />
+    <None Include="..\resources\MobileNetSSD_deploy.prototxt" />
+    <None Include="rscvdnn.ini" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="..\resources\NotoSansTC-Bold.otf" />
+    <Font Include="..\resources\NotoSansTC-Regular.otf" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\nanogui\nanogui.vcxproj">
+      <Project>{6089abc6-6e53-4d69-8f96-e4ba91eaa18c}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <Target Name="AfterBuild">
+    <Message Text="Copy files to output folder" />
+    <ItemGroup>
+      <FileToCopy Include="$(ProjectDir)\$(TargetName).ini" />
+      <FileToCopy Include="@(Font)" />
+      <FileToCopy Include="..\resources\MobileNetSSD_deploy.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(FileToCopy)" DestinationFolder="$(OutDir)" />
+  </Target>
+  <Target Name="AfterClean">
+    <Message Text="Delete files from output folder" />
+    <ItemGroup>
+      <FileToDelete Include="$(OutDir)\$(TargetName).ini" />
+      <FileToDelete Include="$(OutDir)\*.otf" />
+      <FileToDelete Include="$(OutDir)\MobileNetSSD_deploy.*" />
+    </ItemGroup>
+    <Delete Files="@(FileToDelete)" />
+  </Target>
 </Project>
