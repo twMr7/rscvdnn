@@ -91,7 +91,7 @@ int AppMain::main(const ArgVec & args)
         // initialize GUI
         nanogui::init();
         {
-            nanogui::ref<MainWindow> guiMain = new MainWindow(Eigen::Vector2i(1440, 810), "RealSense OpenCV DNN object detection");
+            nanogui::ref<MainWindow> guiMain = new MainWindow(Eigen::Vector2i(1280, 720), "RealSense OpenCV DNN object detection");
             guiMain->drawAll();
             guiMain->setVisible(true);
             poco_information(logger(), "MainWindow started");

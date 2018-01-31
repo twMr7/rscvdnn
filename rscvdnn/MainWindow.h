@@ -1,7 +1,9 @@
 #pragma once
 #include <string>
 #include <mutex>
+#include <unordered_map>
 #include <Poco/Logger.h>
+#include <Poco/Util/LayeredConfiguration.h>
 #include <Eigen/Core>
 #include <nanogui/common.h>
 #include <nanogui/screen.h>
@@ -11,6 +13,20 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/dnn.hpp>
 #include "VideoWindow.h"
+
+// text translation id for multilingual GUI text
+enum class TextId : uint8_t
+{
+    ControlSetting,
+    VideoStream,
+    ColorStream,
+    DepthStream,
+    DnnObjDetect,
+    StartDetect
+};
+
+// text translation mapping for multilingual GUI text
+using TextMap = std::unordered_map<TextId, std::string>;
 
 class MainWindow : public nanogui::Screen
 {
@@ -24,6 +40,7 @@ public:
     void draw(NVGcontext *ctx) override;
 
 protected:
+    void initTextMap();
     bool tryStartVideo();
     void stopVideo();
     bool isVideoStarted();
@@ -32,6 +49,8 @@ protected:
 
 private:
     Poco::Logger & _logger;
+    Poco::Util::LayeredConfiguration & _config;
+    TextMap _textmap;
     nanogui::Window *_settingWindow;
     nanogui::Button *_btnColorStream;
     nanogui::Button *_btnDepthStream;

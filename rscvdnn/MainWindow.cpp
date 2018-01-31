@@ -1,6 +1,9 @@
 #include <string>
 #include <sstream>
 #include <cmath>
+#include <Poco/Logger.h>
+#include <Poco/Util/Application.h>
+#include <Poco/Util/AbstractConfiguration.h>
 #include <Eigen/Core>
 #include <nanogui/common.h>
 #include <nanogui/screen.h>
@@ -20,6 +23,8 @@ using std::mutex;
 using std::lock_guard;
 using std::ostringstream;
 using Poco::Logger;
+using Poco::Util::Application;
+using Poco::Util::AbstractConfiguration;
 using Eigen::Vector2i;
 using nanogui::Screen;
 using nanogui::Window;
@@ -29,27 +34,10 @@ using nanogui::Label;
 using nanogui::Button;
 using nanogui::MessageDialog;
 
-//#define UI_LANG_CHT
-
-#ifdef UI_LANG_CHT
-    #define UI_TEXT_CONTROLSETTING u8"控制／設定"
-    #define UI_TEXT_VIDEOSTREAM u8"視訊串流" 
-    #define UI_TEXT_COLORSTREAM u8" 彩色影像 "
-    #define UI_TEXT_DEPTHSTREAM u8" 深度影像 "
-    #define UI_TEXT_DNNOBJDETECT u8"DNN 物件辨識"
-    #define UI_TEXT_STARTDETECT u8" 開始偵測 "
-#else
-    #define UI_TEXT_CONTROLSETTING "Control/Setting"
-    #define UI_TEXT_VIDEOSTREAM "Video Streams" 
-    #define UI_TEXT_COLORSTREAM " Color Stream "
-    #define UI_TEXT_DEPTHSTREAM " Depth Stream "
-    #define UI_TEXT_DNNOBJDETECT "DNN Object Detection"
-    #define UI_TEXT_STARTDETECT " Start Detecting "
-#endif
-
 MainWindow::MainWindow(const Vector2i & size, const string & caption)
     : Screen(size, caption)
     , _logger{ Logger::get("MainWindow") }
+    , _config(Application::instance().config())
     , _isVideoStarted{ false }
     , _colorRatio{ 16.0f / 9.0f }
     , _depthRatio{ 16.0f / 9.0f }
@@ -61,26 +49,28 @@ MainWindow::MainWindow(const Vector2i & size, const string & caption)
     , _classNames{ "background", "aeroplane", "bicycle", "bird", "boat", "bottle", "bus", "car", "cat", "chair",
                    "cow", "diningtable", "dog", "horse", "motorbike", "person", "pottedplant", "sheep", "sofa", "train", "tvmonitor" }
 {
+    // initialize text translation table
+    initTextMap();
     // setting & configuration window
-    _settingWindow = new Window(this, UI_TEXT_CONTROLSETTING);
+    _settingWindow = new Window(this, _textmap[TextId::ControlSetting]);
     _settingWindow->setPosition(Vector2i(0, 0));
     _settingWindow->setLayout(new GroupLayout());
 
-    new Label(_settingWindow, UI_TEXT_VIDEOSTREAM, "sans-bold");
-    _btnColorStream = _settingWindow->add<Button>(UI_TEXT_COLORSTREAM);
+    new Label(_settingWindow, _textmap[TextId::VideoStream], "sans-bold");
+    _btnColorStream = _settingWindow->add<Button>(_textmap[TextId::ColorStream]);
     _btnColorStream->setBackgroundColor(Color(0, 0, 255, 25));
     _btnColorStream->setFlags(Button::ToggleButton);
     _btnColorStream->setTooltip("Show RGB color video stream");
     _btnColorStream->setChangeCallback([&](bool state) { onToggleColorStream(state); });
 
-    _btnDepthStream = _settingWindow->add<Button>(UI_TEXT_DEPTHSTREAM);
+    _btnDepthStream = _settingWindow->add<Button>(_textmap[TextId::DepthStream]);
     _btnDepthStream->setBackgroundColor(Color(0, 0, 255, 25));
     _btnDepthStream->setFlags(Button::ToggleButton);
     _btnDepthStream->setTooltip("Show depth sensor stream");
     _btnDepthStream->setChangeCallback([&](bool state) { onToggleDepthStream(state); });
 
-    new Label(_settingWindow, UI_TEXT_DNNOBJDETECT, "sans-bold");
-    _btnStartCvdnn = _settingWindow->add<Button>(UI_TEXT_STARTDETECT);
+    new Label(_settingWindow, _textmap[TextId::DnnObjDetect], "sans-bold");
+    _btnStartCvdnn = _settingWindow->add<Button>(_textmap[TextId::StartDetect]);
     _btnStartCvdnn->setBackgroundColor(Color(255, 0, 128, 25));
     _btnStartCvdnn->setFlags(Button::ToggleButton);
     _btnStartCvdnn->setTooltip("Start MobileNet Single-Shot Detector");
@@ -105,7 +95,7 @@ void MainWindow::onToggleColorStream(bool on)
 
     if (on && _colorWindow == nullptr)
     {
-        _colorWindow = new VideoWindow(this, UI_TEXT_COLORSTREAM);
+        _colorWindow = new VideoWindow(this, _textmap[TextId::ColorStream]);
         _colorWindow->setPosition(Vector2i(_settingWindow->size()(0), 0));
         performLayout();
         resizeEvent(this->size());
@@ -129,7 +119,7 @@ void MainWindow::onToggleDepthStream(bool on)
 
     if (on && _depthWindow == nullptr)
     {
-        _depthWindow = new VideoWindow(this, UI_TEXT_DEPTHSTREAM);
+        _depthWindow = new VideoWindow(this, _textmap[TextId::DepthStream]);
         _depthWindow->setPosition(Vector2i(_settingWindow->size()(0) + 30, 30));
         performLayout();
         resizeEvent(this->size());
@@ -225,6 +215,18 @@ void MainWindow::draw(NVGcontext * ctx)
     }
 
     Screen::draw(ctx);
+}
+
+void MainWindow::initTextMap()
+{
+    // initialize the text translation table
+    string lang = _config.getString("application.language", "en_US");
+    _textmap[TextId::ControlSetting] = _config.getString(lang + ".ControlSetting", "Control / Setting");
+    _textmap[TextId::VideoStream] = _config.getString(lang + ".VideoStream", "Video Stream");
+    _textmap[TextId::ColorStream] = _config.getString(lang + ".ColorStream", "Color Stream");
+    _textmap[TextId::DepthStream] = _config.getString(lang + ".DepthStream", "Depth Stream");
+    _textmap[TextId::DnnObjDetect] = _config.getString(lang + ".DnnObjDetect", "DNN Object Detection");
+    _textmap[TextId::StartDetect] = _config.getString(lang + ".StartDetect", "Start Detecting");
 }
 
 bool MainWindow::tryStartVideo()
