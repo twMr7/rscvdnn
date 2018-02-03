@@ -1,9 +1,11 @@
 # rscvdnn
-A Visual C++ project to test run the *OpenCV DNN object detection* with *RealSense* camera. The GUI utilize a modified version of gorgeous [*nanogui*](https://github.com/wjakob/nanogui) and use *OpenGL shader* to render video streams.
+A Visual C++ project to test run the *OpenCV DNN object detection* with *RealSense* camera. The GUI utilizes a modified version of gorgeous [*nanogui*](https://github.com/wjakob/nanogui) and use *OpenGL shader* to render video streams.
 
 The *Deep Neural Network* part of codes are derived from [*MobileNet Single-Shot Detector*](https://github.com/opencv/opencv/blob/master/samples/dnn/ssd_mobilenet_object_detection.cpp) example of *OpenCV*. The trained [*Caffe model*](https://github.com/chuanqi305/MobileNet-SSD) (included in project [resources](https://github.com/twMr7/rscvdnn/tree/master/resources)) is loaded at the beginning and used to classify 20 object classes from RGB image. Note that only the center square ROI is the hot detecting spot, the unused side bands shall turn gray by design. For each detected object, the distance is estimated from its detected location within corresponding depth frame.
 
 ## Screenshot
+A test run video captured from screen is available on YouTube [**here**](https://youtu.be/PoBSpZ8VH08).
+
 ![screenshot_eng](./resources/screenshot_eng.png)
 ![screenshot_zh_TW](./resources/screenshot_cht.png)
 
